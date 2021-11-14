@@ -1,23 +1,70 @@
-load("@rules_python//python:defs.bzl", "py_runtime")
-load("@rules_python//python:defs.bzl", "py_runtime_pair")
+package(default_visibility = ["//visibility:public"])
 
-# targets for hermetic Python runtime
-py_runtime(
-    name = "python3_runtime",
-    files = ["@python_interpreter//:files"],
-    interpreter = "@python_interpreter//:python_bin",
-    python_version = "PY3",
-    visibility = ["//visibility:public"],
+cc_library(
+    name = "proto_udp_client",
+    hdrs = [
+        "proto_udp_client.hpp",
+    ],
+    deps = [
+        "//software/logger",
+        "//software/util/typename",
+    ],
 )
 
-py_runtime_pair(
-    name = "py_runtime_pair",
-    py2_runtime = None,
-    py3_runtime = ":python3_runtime",
+cc_library(
+    name = "proto_udp_listener",
+    hdrs = [
+        "proto_udp_listener.hpp",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//software/logger",
+        "//software/util/typename",
+    ],
 )
 
-toolchain(
-    name = "py_toolchain",
-    toolchain = ":py_runtime_pair",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+cc_library(
+    name = "proto_unix_listener",
+    hdrs = [
+        "proto_unix_listener.hpp",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//software/logger",
+        "//software/util/typename",
+    ],
+)
+
+cc_library(
+    name = "proto_udp_sender",
+    hdrs = [
+        "proto_udp_sender.hpp",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//software/logger",
+        "@boost//:asio",
+    ],
+)
+
+cc_library(
+    name = "threaded_proto_udp_listener",
+    hdrs = [
+        "threaded_proto_udp_listener.hpp",
+    ],
+    deps = [
+        ":proto_udp_listener",
+        "@boost//:asio",
+    ],
+)
+
+cc_library(
+    name = "threaded_proto_udp_sender",
+    hdrs = [
+        "threaded_proto_udp_sender.hpp",
+    ],
+    deps = [
+        ":proto_udp_sender",
+        "@boost//:asio",
+    ],
 )

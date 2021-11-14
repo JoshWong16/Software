@@ -24,6 +24,18 @@ cc_library(
 )
 
 cc_library(
+    name = "proto_unix_listener",
+    hdrs = [
+        "proto_unix_listener.hpp",
+    ],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//software/logger",
+        "//software/util/typename",
+    ],
+)
+
+cc_library(
     name = "proto_udp_sender",
     hdrs = [
         "proto_udp_sender.hpp",
