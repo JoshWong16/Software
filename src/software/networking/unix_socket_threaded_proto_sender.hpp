@@ -94,4 +94,4 @@ void ThreadedProtoUdpSender<SendProtoT>::sendProto(const SendProtoT& message)
     boost::asio::write(socket, sbuf);
 }
 
-#include "software/networking/unix_socket_threaded_proto_udp_sender.hpp"
+#include "software/networking/unix_socket_threaded_proto_sender.hpp"

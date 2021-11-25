@@ -9,7 +9,7 @@
 #include "software/backend/ssl_proto_client.h"
 #include "software/estop/threaded_estop_reader.h"
 #include "software/networking/threaded_proto_udp_listener.hpp"
-#include "software/networking/threaded_proto_udp_sender.hpp"
+#include "software/networking/unix_socket_threaded_proto_sender.hpp"
 
 class WifiBackend : public Backend
 {
