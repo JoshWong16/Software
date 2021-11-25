@@ -49,11 +49,22 @@ cc_library(
 
 cc_library(
     name = "threaded_proto_udp_listener",
-    hdrs = [
+    srcs = [
         "threaded_proto_udp_listener.hpp",
     ],
     deps = [
         ":proto_udp_listener",
+        "@boost//:asio",
+    ],
+)
+
+cc_library(
+    name = "threaded_proto_unix_listener",
+    srcs = [
+        "threaded_proto_unix_listener.hpp",
+    ],
+    deps = [
+        ":proto_unix_listener",
         "@boost//:asio",
     ],
 )

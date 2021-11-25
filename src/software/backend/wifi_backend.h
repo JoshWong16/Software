@@ -10,6 +10,7 @@
 #include "software/estop/threaded_estop_reader.h"
 #include "software/networking/threaded_proto_udp_listener.hpp"
 #include "software/networking/threaded_proto_udp_sender.hpp"
+#include "software/networking/proto_unix_listener.hpp"
 
 class WifiBackend : public Backend
 {
