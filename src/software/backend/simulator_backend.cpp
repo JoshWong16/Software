@@ -58,6 +58,10 @@ void SimulatorBackend::receiveRobotLogs(TbotsProto::RobotLog log)
               << "[" << log.file_name() << ":" << log.line_number()
               << "]: " << log.log_msg() << std::endl;
 }
+void SimulatorBackend::receiveDynamicParamConfig(DynamicParamProto::AiControlConfig config)
+{
+    std::cerr<<"VALID PROTO: "<<config.run_ai()<<std::endl;
+}
 
 void SimulatorBackend::joinMulticastChannel(int channel, const std::string& interface)
 {
@@ -81,6 +85,11 @@ void SimulatorBackend::joinMulticastChannel(int channel, const std::string& inte
     defending_side_output.reset(new ThreadedProtoUdpSender<DefendingSideProto>(
         std::string(SIMULATOR_MULTICAST_CHANNELS[channel]) + "%" + interface,
         DEFENDING_SIDE_PORT, true));
+
+    ai_control_config_input.reset(
+        new ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>(
+            "/tmp/dynamic_param", ROBOT_STATUS_PORT,
+            boost::bind(&SimulatorBackend::receiveDynamicParamConfig, this, _1), true));
 }
 
 // Register this backend in the genericFactory

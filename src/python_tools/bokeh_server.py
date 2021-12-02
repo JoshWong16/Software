@@ -1,61 +1,93 @@
+from bokeh.layouts import column, row
+from bokeh.plotting import figure
+from bokeh.sampledata.sea_surface_temperature import sea_surface_temperature
 from bokeh.server.server import Server
+from bokeh.themes import Theme
+from bokeh.plotting import figure
+from bokeh.io import output_notebook, show, push_notebook, curdoc
+from bokeh.models import ColumnDataSource, Slider, Button, CustomJS, Select, Dropdown
 
-from random import random
+from python_tools.plotting.plot_ssl_wrapper import SSLWrapperPlotter, MM_PER_M
 
-from bokeh.layouts import column
-from bokeh.models import Button
-from bokeh.palettes import RdYlBu3
-from bokeh.plotting import figure, curdoc
-
-
-def visualizer(doc):
-    # the code below is just an example that's supposed to display a grid and buttons,
-    # to be replaced by our actual code once the server actually works
-    
-    # create a plot and style its properties
-    p = figure(x_range=(0, 100), y_range=(0, 100), toolbar_location=None)
-    p.border_fill_color = 'black'
-    p.background_fill_color = 'black'
-    p.outline_line_color = None
-    p.grid.grid_line_color = None
-
-    # add a text renderer to the plot (no data yet)
-    r = p.text(x=[], y=[], text=[], text_color=[], text_font_size="26px",
-            text_baseline="middle", text_align="center")
-
-    i = 0
-
-    ds = r.data_source
-
-    # create a callback that adds a number in a random location
-    def callback():
-        global i
-
-        # BEST PRACTICE --- update .data in one step with a new dict
-        new_data = dict()
-        new_data['x'] = ds.data['x'] + [random()*70 + 15]
-        new_data['y'] = ds.data['y'] + [random()*70 + 15]
-        new_data['text_color'] = ds.data['text_color'] + [RdYlBu3[i%3]]
-        new_data['text'] = ds.data['text'] + [str(i)]
-        ds.data = new_data
-
-        i = i + 1
-
-    # add a button widget and configure with the call back
-    button = Button(label="Press Me")
-    button.on_click(callback)
-
-    # put the button and plot in a layout and add to the document
-    curdoc().add_root(column(button, p))
+from proto.messages_robocup_ssl_wrapper_pb2 import SSL_WrapperPacket
+from python_tools.proto_log import ProtoLog
+from proto.ai_control_config_pb2 import AiControlConfig
 
 
-if __name__ == '__main__':
+def bkapp(doc):
+    fig = figure(width=1000, height=600, match_aspect=True)
+    fig.background_fill_color = "white"
+    ssl_wrapper_plotter = SSLWrapperPlotter(fig)
+
+    # TODO: UNIX SOCKET CODE
+    def plot_ssl_wrapper_at_idx(idx):
+        ssl_wrapper_plotter.plot_ssl_wrapper(wrapper_proto_log[idx])
+
+    # START AI BUTTON
+    start_button = Button(label="Start AI")
+
+    def start_clicked(b):
+        AiControlConfig.run_ai = "true"
+        print(AiControlConfig.run_ai)
+
+    start_button.on_click(start_clicked)
+
+    # GAMESTATE OVERRIDE
+    def gamestate(attr, old, new):
+        AiControlConfig.override_ai_play = new
+        print(AiControlConfig.override_ai_play)
+
+    gamestateOver = Dropdown(
+        label="Gamestate Override",
+        button_type="warning",
+        menu=[
+            (""),
+            ("Use GameController"),
+            ("HALT"),
+            ("STOP"),
+            ("NORMAL_START"),
+            ("FORCE_START"),
+            ("PREPARE_KICKOFF_US"),
+            ("PREPARE_KICKOFF_THEM"),
+            ("PREPARE_PENALTY_US"),
+            ("PREPARE_PENALTY_THEM"),
+            ("DIRECT_FREE_US"),
+            ("DIRECT_FREE_THEM"),
+            ("INDIRECT_FREE_US"),
+            ("INDIRECT_FREE_THEM"),
+            ("TIMEOUT_US"),
+            ("TIMEOUT_THEM"),
+            ("GOAL_US"),
+            ("GOAL_THEM"),
+            ("BALL_PLACEMENT_US"),
+            ("BALL_PLACEMENT_THEM"),
+        ],
+    )
+
+    gamestateOver.on_change("menu", gamestate)
+
+    # PLAY OVERRIDE
+    def play(atrr, old, new):
+        AiControlConfig.current_ai_play = new
+        print(AiControlConfig.current_ai_play)
+
+    playOver = Dropdown(
+        menu=[(""), ("Use AI Selection"), ("HaltPlay")],
+        label="Play Override:",
+    )
+
+    playOver.on_change("menu", play)
+
+    doc.add_root(column(fig, row(start_button, gamestateOver, playOver)))
+
+if __name__ == "__main__":
     # Setting num_procs here means we can't touch the IOLoop before now, we must
     # let Server handle that. If you need to explicitly handle IOLoops then you
     # will need to use the lower level BaseServer class.
-    server = Server({'/': visualizer})
+    server = Server({"/": bkapp}, num_procs=1)
     server.start()
 
-    print('Opening Bokeh application on http://localhost:5006/')
+    print("Opening Bokeh application on http://localhost:5006/")
+
     server.io_loop.add_callback(server.show, "/")
     server.io_loop.start()

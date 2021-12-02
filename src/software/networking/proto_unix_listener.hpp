@@ -2,21 +2,21 @@
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-iasdoijasd
 #include <string>
 
 #include "software/logger/logger.h"
+#include "software/networking/proto_udp_listener.hpp"
 #include "software/util/typename/typename.h"
 
 template <class ReceiveProtoT>
-class ProtoUdpListener
+class ProtoUnixListener
 {
    public:
     /**
-     * Creates an ProtoUdpListener that will listen for ReceiveProtoT packets from
+     * Creates an ProtoUnixListener that will listen for ReceiveProtoT packets from
      * the network on the multicast group of given address and port. For every
      * ReceiveProtoT packet received, the receive_callback will be called to perform any
-     * operations desired by the caller
+     * operations fdesired by the caller
      *
      * @param io_service The io_service to use to service incoming ReceiveProtoT data
      * @param ip_address The ip address of on which to listen for the given ReceiveProtoT
@@ -27,9 +27,24 @@ class ProtoUdpListener
      * from the network
      * @param multicast If true, joins the multicast group of given ip_address
      */
-    ProtoUnixListener(boost::asio::io_service& io_service,
-                      const std::string& unix_address,
-                      std::function<void(ReceiveProtoT&)> receive_callback);
+    ProtoUnixListener(boost::asio::io_service& io_service, const std::string& ip_address,
+                     unsigned short port,
+                     std::function<void(ReceiveProtoT&)> receive_callback,
+                     bool multicast);
+
+    /**
+     * Creates an ProtoUnixListener that will listen for ReceiveProtoT packets from
+     * the network on any local address with given port. For every ReceiveProtoT packet
+     * received, the receive_callback will be called to perform any operations desired by
+     * the caller
+     *
+     * @param io_service The io_service to use to service incoming ReceiveProtoT data
+     * @param port The port on which to listen for ReceiveProtoT packets
+     * @param receive_callback The function to run for every ReceiveProtoT packet received
+     * from the network
+     */
+    ProtoUnixListener(boost::asio::io_service& io_service, unsigned short port,
+                     std::function<void(ReceiveProtoT&)> receive_callback);
 
     virtual ~ProtoUnixListener();
 
@@ -49,7 +64,10 @@ class ProtoUdpListener
     void startListen();
 
     // A UDP socket that we listen on for ReceiveProtoT messages from the network
-    boost::asio::local::stream_protocol::socket socket_;
+    boost::asio::local::datagram_protocol::socket socket_;
+    // The endpoint for the sender
+    boost::asio::local::datagram_protocol::endpoint listen_endpoint_;
+    boost::asio::local::datagram_protocol::endpoint endpoint_;
 
     static constexpr unsigned int MAX_BUFFER_LENGTH = 9000;
     std::array<char, MAX_BUFFER_LENGTH> raw_received_data_;
@@ -60,46 +78,41 @@ class ProtoUdpListener
 
 template <class ReceiveProtoT>
 ProtoUnixListener<ReceiveProtoT>::ProtoUnixListener(
-    boost::asio::io_service& io_service, const unsigned short port,
-    std::function<void(ReceiveProtoT&)> receive_callback)
+    boost::asio::io_service& io_service, const std::string& ip_address,
+    const unsigned short port, std::function<void(ReceiveProtoT&)> receive_callback,
+    bool multicast)
     : socket_(io_service), receive_callback(receive_callback)
 {
-    boost::asio::ip::udp::endpoint listen_endpoint(boost::asio::ip::udp::v6(), port);
-    socket_.open(listen_endpoint.protocol());
-    // Explicitly set the v6_only option to be false to accept both ipv4 and ipv6 packets
-    socket_.set_option(boost::asio::ip::v6_only(false));
-    try
-    {
-        socket_.bind(listen_endpoint);
-    }
-    catch (const boost::exception& ex)
-    {
-        LOG(FATAL) << "UdpListener: There was an issue binding the socket to "
-                      "the listen_endpoint when trying to connect to the "
-                      "address. This may be due to another instance of the "
-                      "UdpListener running and using the port already. "
-                      "(port = "
-                   << port << ")" << std::endl;
-    }
-
+    listen_endpoint_ = boost::asio::local::datagram_protocol::endpoint(ip_address);
+    socket_.open();
+    socket_.bind(listen_endpoint_);
     startListen();
 }
 
 template <class ReceiveProtoT>
-void ProtoUdpListener<ReceiveProtoT>::startListen()
+ProtoUnixListener<ReceiveProtoT>::ProtoUnixListener(
+    boost::asio::io_service& io_service, const unsigned short port,
+    std::function<void(ReceiveProtoT&)> receive_callback)
+    : socket_(io_service), receive_callback(receive_callback)
+{
+    startListen();
+}
+
+template <class ReceiveProtoT>
+void ProtoUnixListener<ReceiveProtoT>::startListen()
 {
     // Start listening for data asynchronously
     // See here for a great explanation about asynchronous operations:
     // https://stackoverflow.com/questions/34680985/what-is-the-difference-between-asynchronous-programming-and-multithreading
-    socket_.async_read(boost::asio::buffer(raw_received_data_, MAX_BUFFER_LENGTH),
-                               sender_endpoint_,
+    socket_.async_receive_from(boost::asio::buffer(raw_received_data_, MAX_BUFFER_LENGTH),
+                               listen_endpoint_,
                                boost::bind(&ProtoUnixListener::handleDataReception, this,
                                            boost::asio::placeholders::error,
                                            boost::asio::placeholders::bytes_transferred));
 }
 
 template <class ReceiveProtoT>
-void ProtoUdpListener<ReceiveProtoT>::handleDataReception(
+void ProtoUnixListener<ReceiveProtoT>::handleDataReception(
     const boost::system::error_code& error, size_t num_bytes_received)
 {
     if (!error)
@@ -132,7 +145,7 @@ void ProtoUdpListener<ReceiveProtoT>::handleDataReception(
 }
 
 template <class ReceiveProtoT>
-ProtoUdpListener<ReceiveProtoT>::~ProtoUdpListener()
+ProtoUnixListener<ReceiveProtoT>::~ProtoUnixListener()
 {
     socket_.close();
 }

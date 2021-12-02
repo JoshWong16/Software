@@ -11,6 +11,7 @@
 #include "software/estop/threaded_estop_reader.h"
 #include "software/logger/logger.h"
 #include "software/util/generic_factory/generic_factory.h"
+#include "software/networking/threaded_proto_unix_listener.hpp"
 
 
 WifiBackend::WifiBackend(std::shared_ptr<const BackendConfig> config)
@@ -84,6 +85,12 @@ void WifiBackend::receiveRobotLogs(TbotsProto::RobotLog log)
               << "]: " << log.log_msg() << std::endl;
 }
 
+void WifiBackend::receiveDynamicParamConfig(DynamicParamProto::AiControlConfig config)
+{
+    std::cerr<<config.run_ai()<<std::endl;
+}
+
+
 void WifiBackend::joinMulticastChannel(int channel, const std::string& interface)
 {
     vision_output.reset(new ThreadedProtoUdpSender<TbotsProto::Vision>(
@@ -105,6 +112,11 @@ void WifiBackend::joinMulticastChannel(int channel, const std::string& interface
     defending_side_output.reset(new ThreadedProtoUdpSender<DefendingSideProto>(
         std::string(ROBOT_MULTICAST_CHANNELS[channel]) + "%" + interface,
         DEFENDING_SIDE_PORT, true));
+
+    ai_control_config_input.reset(
+        new ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>(
+            "/tmp/dynamic_param", ROBOT_STATUS_PORT,
+            boost::bind(&WifiBackend::receiveDynamicParamConfig, this, _1), true));
 }
 
 // Register this backend in the genericFactory

@@ -4,13 +4,15 @@
 #include "proto/robot_log_msg.pb.h"
 #include "proto/robot_status_msg.pb.h"
 #include "proto/tbots_software_msgs.pb.h"
+#include "proto/ai_control_config.pb.h"
 #include "shared/parameter/cpp_dynamic_parameters.h"
 #include "software/backend/backend.h"
 #include "software/backend/ssl_proto_client.h"
 #include "software/estop/threaded_estop_reader.h"
-#include "software/networking/threaded_proto_udp_listener.hpp"
-#include "software/networking/threaded_proto_udp_sender.hpp"
 #include "software/networking/proto_unix_listener.hpp"
+#include "software/networking/threaded_proto_udp_listener.hpp"
+#include "software/networking/threaded_proto_unix_listener.hpp"
+#include "software/networking/threaded_proto_udp_sender.hpp"
 
 class WifiBackend : public Backend
 {
@@ -44,6 +46,7 @@ class WifiBackend : public Backend
      * @param robot_log The robot_log that was received
      */
     void receiveRobotLogs(TbotsProto::RobotLog robot_log);
+    void receiveDynamicParamConfig(DynamicParamProto::AiControlConfig config);
 
     const std::shared_ptr<const NetworkConfig> network_config;
     const std::shared_ptr<const SensorFusionConfig> sensor_fusion_config;
@@ -58,6 +61,8 @@ class WifiBackend : public Backend
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotStatus>> robot_status_input;
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotLog>> robot_log_input;
     std::unique_ptr<ThreadedProtoUdpSender<DefendingSideProto>> defending_side_output;
+
+    std::unique_ptr<ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>> ai_control_config_input;
 
 
     std::unique_ptr<ThreadedEstopReader> estop_reader;

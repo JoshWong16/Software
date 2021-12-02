@@ -47,6 +47,7 @@ cc_library(
         "//software/estop:threaded_estop_reader",
         "//software/logger",
         "//software/networking:threaded_proto_udp_listener",
+        "//software/networking:threaded_proto_unix_listener",
         "//software/networking:threaded_proto_udp_sender",
         "//software/util/generic_factory",
     ],
@@ -72,6 +73,7 @@ cc_library(
         "//software/logger",
         "//software/networking:threaded_proto_udp_listener",
         "//software/networking:threaded_proto_udp_sender",
+        "//software/networking:threaded_proto_unix_listener",
         "//software/util/generic_factory",
     ],
     # We force linking so that the static variables required for the "factory"

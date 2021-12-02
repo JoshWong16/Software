@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 proto_library(
     name = "tbots_proto",
     srcs = [
+        "ai_control_config.proto",
         "game_state.proto",
         "geometry.proto",
         "primitive.proto",
@@ -14,7 +15,6 @@ proto_library(
         "robot_status_msg.proto",
         "tbots_software_msgs.proto",
         "tbots_timestamp_msg.proto",
-        "ai_control_config.proto",
         "vision.proto",
     ],
     deps = [
@@ -176,6 +176,7 @@ cc_proto_library(
 py_proto_library(
     name = "software_py_proto",
     srcs = [
+        "ai_control_config.proto",
         "messages_robocup_ssl_detection.proto",
         "messages_robocup_ssl_geometry.proto",
         "messages_robocup_ssl_wrapper.proto",
@@ -186,7 +187,6 @@ py_proto_library(
         "ssl_gc_game_event.proto",
         "ssl_gc_geometry.proto",
         "ssl_gc_referee_message.proto",
-        "ai_config.proto",
     ],
     deps = [
         ":tbots_py_proto",

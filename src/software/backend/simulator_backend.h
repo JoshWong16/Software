@@ -9,6 +9,8 @@
 #include "software/backend/ssl_proto_client.h"
 #include "software/networking/threaded_proto_udp_listener.hpp"
 #include "software/networking/threaded_proto_udp_sender.hpp"
+#include "software/networking/threaded_proto_unix_listener.hpp"
+#include "proto/ai_control_config.pb.h"
 
 class SimulatorBackend : public Backend
 {
@@ -41,6 +43,7 @@ class SimulatorBackend : public Backend
      * @param robot_log The robot_log that was received
      */
     void receiveRobotLogs(TbotsProto::RobotLog robot_log);
+    void receiveDynamicParamConfig(DynamicParamProto::AiControlConfig config);
 
     const std::shared_ptr<const NetworkConfig> network_config;
     const std::shared_ptr<const SensorFusionConfig> sensor_fusion_config;
@@ -54,4 +57,5 @@ class SimulatorBackend : public Backend
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotStatus>> robot_status_input;
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotLog>> robot_log_input;
     std::unique_ptr<ThreadedProtoUdpSender<DefendingSideProto>> defending_side_output;
+    std::unique_ptr<ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>> ai_control_config_input;
 };

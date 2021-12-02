@@ -82,4 +82,3 @@ ProtoUdpSender<SendProto>::~ProtoUdpSender()
 }
 
 #include "software/networking/proto_udp_sender.hpp"
-ijasodijasdoij

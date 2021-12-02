@@ -12,7 +12,7 @@ message AiControlConfig
     // Overrides the current play with the play
     // specified by currentPlay parameter
     string override_ai_play = 2;
-    
+
     // Specifies the ai play that should be in use
     string current_ai_play = 3;
 }

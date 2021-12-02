@@ -52,7 +52,7 @@ ThreadedProtoUdpSender<SendProtoT>::ThreadedProtoUdpSender(const std::string& ip
                                                            const unsigned short port,
                                                            bool multicast)
     : io_service(),
-    //   udp_sender(io_service, ip_address, port, multicast),
+      //   udp_sender(io_service, ip_address, port, multicast),
       io_service_thread([this]() { io_service.run(); })
 {
 }
@@ -85,10 +85,10 @@ void ThreadedProtoUdpSender<SendProtoT>::sendProto(const SendProtoT& message)
     // udp_sender.sendProto(message);
     ostream serialized(&sbuf);
     message.SerializeToOstream(&serialized);
-    
+
     uint32_t message_length = sbuf.size();
-    
-    message_length = htonl(message_length); // endianness!
+
+    message_length = htonl(message_length);  // endianness!
 
     boost::asio::write(socket, boost::asio::buffer(&message_length, 4));
     boost::asio::write(socket, sbuf);

@@ -50,16 +50,18 @@ slider = ipywidgets.IntSlider(min=0, max=len(wrapper_proto_log) - 1)
 ipywidgets.interact(plot_ssl_wrapper_at_idx, idx=slider)
 
 
-# START AI BUTTON 
+# START AI BUTTON
 buttonStart = ipywidgets.Button(description="Start AI")
 output = ipywidgets.Output()
 
 display(buttonStart, output)
 
+
 def start_clicked(b):
     with output:
-        AiControlConfig.run_ai = 'true'
+        AiControlConfig.run_ai = "true"
         print(AiControlConfig.run_ai)
+
 
 buttonStart.on_click(start_clicked)
 
@@ -70,10 +72,12 @@ output = ipywidgets.Output()
 
 display(buttonStop, output)
 
+
 def stop_clicked(b):
     with output:
-        AiControlConfig.run_ai = 'false'
+        AiControlConfig.run_ai = "false"
         print(AiControlConfig.run_ai)
+
 
 buttonStop.on_click(stop_clicked)
 
@@ -81,21 +85,43 @@ buttonStop.on_click(stop_clicked)
 # GAMESTATE OVERRIDE
 def gamestate(b):
     with output:
-        AiControlConfig.override_ai_play = b.new 
+        AiControlConfig.override_ai_play = b.new
         print(AiControlConfig.override_ai_play)
-        
+
+
 gamestateOver = ipywidgets.Dropdown(
-    options=[(''), ('Use GameController'), ('HALT'), ('STOP'), ('NORMAL_START'), ('FORCE_START'), ('PREPARE_KICKOFF_US'), ('PREPARE_KICKOFF_THEM'), ('PREPARE_PENALTY_US'), ('PREPARE_PENALTY_THEM'), ('DIRECT_FREE_US'), ('DIRECT_FREE_THEM'), ('INDIRECT_FREE_US'), ('INDIRECT_FREE_THEM'), ('TIMEOUT_US'), ('TIMEOUT_THEM'), ('GOAL_US'), ('GOAL_THEM'), ('BALL_PLACEMENT_US'), ('BALL_PLACEMENT_THEM')],
-    value= '',
-    description='Gamestate Override:',
+    options=[
+        (""),
+        ("Use GameController"),
+        ("HALT"),
+        ("STOP"),
+        ("NORMAL_START"),
+        ("FORCE_START"),
+        ("PREPARE_KICKOFF_US"),
+        ("PREPARE_KICKOFF_THEM"),
+        ("PREPARE_PENALTY_US"),
+        ("PREPARE_PENALTY_THEM"),
+        ("DIRECT_FREE_US"),
+        ("DIRECT_FREE_THEM"),
+        ("INDIRECT_FREE_US"),
+        ("INDIRECT_FREE_THEM"),
+        ("TIMEOUT_US"),
+        ("TIMEOUT_THEM"),
+        ("GOAL_US"),
+        ("GOAL_THEM"),
+        ("BALL_PLACEMENT_US"),
+        ("BALL_PLACEMENT_THEM"),
+    ],
+    value="",
+    description="Gamestate Override:",
 )
 output = ipywidgets.Output()
 
-gamestateOver.observe(gamestate, names = 'value')
+gamestateOver.observe(gamestate, names="value")
 display(gamestateOver, output)
 
 
-# PLAY OVERRIDE 
+# PLAY OVERRIDE
 def play(b):
     with output:
         AiControlConfig.current_ai_play = b.new
@@ -103,19 +129,17 @@ def play(b):
 
 
 playOver = ipywidgets.Dropdown(
-    options=[(''), ('Use AI Selection'), ('HaltPlay')],
-    value= '',
-    description='Play Override:',
+    options=[(""), ("Use AI Selection"), ("HaltPlay")],
+    value="",
+    description="Play Override:",
 )
 
 output = ipywidgets.Output()
 
-playOver.observe(play, names = 'value')
+playOver.observe(play, names="value")
 display(playOver, output)
 
 show(fig, notebook_handle=True)
 
 
 # -
-
-
