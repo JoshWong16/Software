@@ -12,6 +12,7 @@
 SimulatorBackend::SimulatorBackend(std::shared_ptr<const BackendConfig> config)
     : network_config(config->getSimulatorBackendConfig()->getNetworkConfig()),
       sensor_fusion_config(config->getSimulatorBackendConfig()->getSensorFusionConfig()),
+      ai_control_config(config->getAiControlConfig()),
       ssl_proto_client(boost::bind(&Backend::receiveSSLWrapperPacket, this, _1),
                        boost::bind(&Backend::receiveSSLReferee, this, _1),
                        network_config->getSslCommunicationConfig())

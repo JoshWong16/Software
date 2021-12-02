@@ -47,6 +47,7 @@ class SimulatorBackend : public Backend
 
     const std::shared_ptr<const NetworkConfig> network_config;
     const std::shared_ptr<const SensorFusionConfig> sensor_fusion_config;
+    const std::shared_ptr<const AiControlConfig> ai_control_config;
 
     // Client to listen for SSL protobufs
     SSLProtoClient ssl_proto_client;
