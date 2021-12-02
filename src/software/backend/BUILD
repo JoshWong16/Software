@@ -73,6 +73,7 @@ cc_library(
         "//software/networking:threaded_proto_udp_listener",
         "//software/networking:threaded_proto_udp_sender",
         "//software/util/generic_factory",
+        "//software/networking:threaded_proto_unix_sender",        
     ],
     # We force linking so that the static variables required for the "factory"
     # design pattern to work are linked in

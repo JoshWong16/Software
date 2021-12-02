@@ -9,6 +9,8 @@
 #include "software/backend/ssl_proto_client.h"
 #include "software/networking/threaded_proto_udp_listener.hpp"
 #include "software/networking/threaded_proto_udp_sender.hpp"
+#include "software/networking/threaded_proto_unix_sender.hpp"
+#include "software/networking/proto_unix_sender.hpp"
 
 class SimulatorBackend : public Backend
 {
@@ -54,4 +56,5 @@ class SimulatorBackend : public Backend
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotStatus>> robot_status_input;
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotLog>> robot_log_input;
     std::unique_ptr<ThreadedProtoUdpSender<DefendingSideProto>> defending_side_output;
+    std::unique_ptr<ThreadedProtounixSender<TbotsProto::Vision>> vision0utput;
 };
