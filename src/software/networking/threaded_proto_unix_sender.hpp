@@ -4,14 +4,14 @@
 #include <boost/bind.hpp>
 #include <string>
 
-#include "software/networking/proto_udp_sender.hpp"
+#include "software/networking/proto_unix_sender.hpp"
 
 template <class SendProto>
-class ThreadedProtoUdpSender
+class ThreadedProtounixSender
 {
    public:
     /**
-     * Creates a ProtoUdpSender that sends the SendProto over the network on the
+     * Creates a ProtounixSender that sends the SendProto over the network on the
      * given address and port.
      *
      * @param ip_address The ip address to send data on
@@ -21,12 +21,11 @@ class ThreadedProtoUdpSender
      * @param port The port to send SendProto data on
      * @param multicast If true, joins the multicast group of given ip_address
      */
-    ThreadedProtoUdpSender(const std::string& ip_address, unsigned short port,
+    ThreadedProtounixSender(const std::string& ip_address, unsigned short port,
                            bool multicast);
 
-    ~ThreadedProtoUdpSender();
+    ~ThreadedProtounixSender();
 
-    ThreadedProtoUdpSender(const std::string& address);
     /**
      * Sends a protobuf message to the initialized ip address and port
      * This function returns after the message has been sent.
@@ -38,27 +37,24 @@ class ThreadedProtoUdpSender
    private:
     // The io_service that will be used to service all network requests
     boost::asio::io_service io_service;
-    ProtoUdpSender<SendProto> udp_sender;
+    ProtounixSender<SendProto> unix_sender;
     // The thread running the io_service in the background. This thread will run for the
     // entire lifetime of the class
     std::thread io_service_thread;
-
-    boost::asio::local::stream_protocol::socket socket;
-    boost::asio::streambuf sbuf;
 };
 
 template <class SendProtoT>
-ThreadedProtoUdpSender<SendProtoT>::ThreadedProtoUdpSender(const std::string& ip_address,
+ThreadedProtounixSender<SendProtoT>::ThreadedProtounixSender(const std::string& ip_address,
                                                            const unsigned short port,
                                                            bool multicast)
     : io_service(),
-      //   udp_sender(io_service, ip_address, port, multicast),
+      unix_sender(io_service, ip_address, port, multicast),
       io_service_thread([this]() { io_service.run(); })
 {
 }
 
 template <class SendProtoT>
-ThreadedProtoUdpSender<SendProtoT>::~ThreadedProtoUdpSender()
+ThreadedProtounixSender<SendProtoT>::~ThreadedProtounixSender()
 {
     // Stop the io_service. This is safe to call from another thread.
     // https://stackoverflow.com/questions/4808848/boost-asio-stopping-io-service
@@ -73,25 +69,10 @@ ThreadedProtoUdpSender<SendProtoT>::~ThreadedProtoUdpSender()
 }
 
 template <class SendProtoT>
-ThreadedProtoUdpSender<SendProtoT>::ThreadedProtoUdpSender(const std::string& address)
+void ThreadedProtounixSender<SendProtoT>::sendProto(const SendProtoT& message)
 {
-    socket(io_service);
-    socket.connect(boost::asio::local::stream_protocol::endpoint(address));
+    unix_sender.sendProto(message);
 }
 
-template <class SendProtoT>
-void ThreadedProtoUdpSender<SendProtoT>::sendProto(const SendProtoT& message)
-{
-    // udp_sender.sendProto(message);
-    ostream serialized(&sbuf);
-    message.SerializeToOstream(&serialized);
 
-    uint32_t message_length = sbuf.size();
-
-    message_length = htonl(message_length);  // endianness!
-
-    boost::asio::write(socket, boost::asio::buffer(&message_length, 4));
-    boost::asio::write(socket, sbuf);
-}
-
-#include "software/networking/unix_socket_threaded_proto_udp_sender.hpp"
+#include "software/networking/threaded_proto_unix_sender.hpp"

@@ -11,6 +11,8 @@
 #include "software/networking/threaded_proto_udp_sender.hpp"
 #include "software/networking/threaded_proto_unix_listener.hpp"
 #include "proto/ai_control_config.pb.h"
+#include "software/networking/threaded_proto_unix_sender.hpp"
+#include "software/networking/proto_unix_sender.hpp"
 
 class SimulatorBackend : public Backend
 {
@@ -58,5 +60,9 @@ class SimulatorBackend : public Backend
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotStatus>> robot_status_input;
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotLog>> robot_log_input;
     std::unique_ptr<ThreadedProtoUdpSender<DefendingSideProto>> defending_side_output;
+<<<<<<< HEAD
     std::unique_ptr<ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>> ai_control_config_input;
+=======
+    std::unique_ptr<ThreadedProtounixSender<TbotsProto::Vision>> vision0utput;
+>>>>>>> josh/jwong/socketSend
 };

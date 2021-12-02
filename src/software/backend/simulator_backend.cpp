@@ -50,6 +50,8 @@ void SimulatorBackend::onValueReceived(TbotsProto::PrimitiveSet primitives)
 void SimulatorBackend::onValueReceived(World world)
 {
     vision_output->sendProto(*createVision(world));
+    std::cerr << "SEND PLEASE" << std::endl;
+    vision0utput->sendProto(*createVision(world));
 }
 
 void SimulatorBackend::receiveRobotLogs(TbotsProto::RobotLog log)
@@ -68,6 +70,10 @@ void SimulatorBackend::joinMulticastChannel(int channel, const std::string& inte
 {
     vision_output.reset(new ThreadedProtoUdpSender<TbotsProto::Vision>(
         std::string(SIMULATOR_MULTICAST_CHANNELS[channel]) + "%" + interface, VISION_PORT,
+        true));
+
+    vision0utput.reset(new ThreadedProtounixSender<TbotsProto::Vision>(
+        "/tmp/sendVision", VISION_PORT,
         true));
 
     primitive_output.reset(new ThreadedProtoUdpSender<TbotsProto::PrimitiveSet>(
