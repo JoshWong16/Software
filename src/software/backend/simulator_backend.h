@@ -60,9 +60,6 @@ class SimulatorBackend : public Backend
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotStatus>> robot_status_input;
     std::unique_ptr<ThreadedProtoUdpListener<TbotsProto::RobotLog>> robot_log_input;
     std::unique_ptr<ThreadedProtoUdpSender<DefendingSideProto>> defending_side_output;
-<<<<<<< HEAD
     std::unique_ptr<ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>> ai_control_config_input;
-=======
     std::unique_ptr<ThreadedProtounixSender<TbotsProto::Vision>> vision0utput;
->>>>>>> josh/jwong/socketSend
 };

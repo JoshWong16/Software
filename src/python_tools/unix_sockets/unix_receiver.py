@@ -1,7 +1,6 @@
 import socketserver
 from struct import unpack
 import os
-from proto.messages_robocup_ssl_wrapper_pb2 import SSL_WrapperPacket
 
 
 class StoppableServer:
@@ -30,11 +29,12 @@ class Session(socketserver.BaseRequestHandler):
         super().__init__(*args, **keys)
 
     def handle(self):
-        header = self.request.recv(4)
-        (message_length,) = unpack(">I", header)  # unpack always returns a tuple.
+        # header = self.request.recv(4)
+        # (message_length,) = unpack(">I", header)  # unpack always returns a tuple.
 
-        message = self.request.recv(message_length)
-        self.handle_callback(self.proto_type.ParseFromString(message))
+        # message = self.request.recv(message_length)
+        message = self.request[0]
+        print(self.request)
 
 
 def handler_factory(proto_type, handle_callback):
@@ -50,7 +50,7 @@ def handle_proto(proto_type):
 
 
 def main():
-    address = "/tmp/socket"
+    address = "/tmp/sendVision"
 
     try:
         os.unlink(address)
@@ -59,8 +59,8 @@ def main():
         pass
 
     receiver = StoppableServer(
-        socketserver.UnixStreamServer(
-            address, handler_factory(SSL_WrapperPacket, handle_proto)
+        socketserver.UnixDatagramServer(
+            address, handler_factory(None, handle_proto)
         )
     )
     receiver.start()
