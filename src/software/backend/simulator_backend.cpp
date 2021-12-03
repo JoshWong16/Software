@@ -12,7 +12,6 @@
 SimulatorBackend::SimulatorBackend(std::shared_ptr<const BackendConfig> config)
     : network_config(config->getSimulatorBackendConfig()->getNetworkConfig()),
       sensor_fusion_config(config->getSimulatorBackendConfig()->getSensorFusionConfig()),
-      ai_control_config(config->getAiControlConfig()),
       ssl_proto_client(boost::bind(&Backend::receiveSSLWrapperPacket, this, _1),
                        boost::bind(&Backend::receiveSSLReferee, this, _1),
                        network_config->getSslCommunicationConfig())
@@ -50,8 +49,7 @@ void SimulatorBackend::onValueReceived(TbotsProto::PrimitiveSet primitives)
 void SimulatorBackend::onValueReceived(World world)
 {
     vision_output->sendProto(*createVision(world));
-    std::cerr << "SEND PLEASE" << std::endl;
-    vision0utput->sendProto(*createVision(world));
+    vision0utput->sendProto(*createSSLWrapperPacket(world));
 }
 
 void SimulatorBackend::receiveRobotLogs(TbotsProto::RobotLog log)
@@ -60,10 +58,6 @@ void SimulatorBackend::receiveRobotLogs(TbotsProto::RobotLog log)
               << "]"
               << "[" << log.file_name() << ":" << log.line_number()
               << "]: " << log.log_msg() << std::endl;
-}
-void SimulatorBackend::receiveDynamicParamConfig(DynamicParamProto::AiControlConfig config)
-{
-    std::cerr<<"VALID PROTO: "<<config.run_ai()<<std::endl;
 }
 
 void SimulatorBackend::joinMulticastChannel(int channel, const std::string& interface)
@@ -92,11 +86,6 @@ void SimulatorBackend::joinMulticastChannel(int channel, const std::string& inte
     defending_side_output.reset(new ThreadedProtoUdpSender<DefendingSideProto>(
         std::string(SIMULATOR_MULTICAST_CHANNELS[channel]) + "%" + interface,
         DEFENDING_SIDE_PORT, true));
-
-    ai_control_config_input.reset(
-        new ThreadedProtoUnixListener<DynamicParamProto::AiControlConfig>(
-            "/tmp/dynamic_param", ROBOT_STATUS_PORT,
-            boost::bind(&SimulatorBackend::receiveDynamicParamConfig, this, _1), true));
 }
 
 // Register this backend in the genericFactory
